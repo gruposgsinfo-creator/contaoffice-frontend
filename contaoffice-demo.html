@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContaOffice — Demo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brand:#2563eb;--brand-d:#1d4ed8;--brand-l:#eff6ff;--brand-t:#bfdbfe;
+  --bg:#f8fafc;--surface:#ffffff;--border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--muted:#64748b;--faint:#94a3b8;
+  --red-bg:#fef2f2;--red:#dc2626;--red-b:#fecaca;
+  --amber-bg:#fffbeb;--amber:#d97706;--amber-b:#fde68a;
+  --green-bg:#f0fdf4;--green:#16a34a;--green-b:#bbf7d0;
+  --radius:10px;--radius-sm:7px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+
+/* ── LAYOUT ── */
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:20px 24px;background:var(--bg)}
+
+/* ── SIDEBAR ── */
+.sb-header{padding:16px 14px;border-bottom:1px solid var(--border)}
+.sb-logo{display:flex;align-items:center;gap:9px}
+.sb-icon{width:32px;height:32px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon svg{width:16px;height:16px;fill:white}
+.sb-name{font-size:14px;font-weight:600;color:var(--text)}
+.sb-plan{font-size:11px;color:var(--muted)}
+.sb-nav{flex:1;padding:8px 8px;overflow-y:auto}
+.sb-section{font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;padding:10px 8px 4px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--muted);border:none;background:none;width:100%;text-align:left;font-family:inherit;transition:all .15s}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--brand-l);color:var(--brand);font-weight:500}
+.nav-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0}
+.sb-footer{padding:10px 8px;border-top:1px solid var(--border)}
+.user-btn{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius-sm);cursor:pointer;width:100%;border:none;background:none;font-family:inherit}
+.user-btn:hover{background:var(--bg)}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--brand-l);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text);text-align:left}
+.user-role{font-size:11px;color:var(--muted);text-align:left}
+
+/* ── TOPBAR ── */
+.tb-left{display:flex;flex-direction:column}
+.tb-title{font-size:16px;font-weight:600;color:var(--text)}
+.tb-sub{font-size:12px;color:var(--muted)}
+.tb-right{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:inherit;transition:all .15s}
+.btn:hover{background:var(--bg);border-color:var(--brand-t)}
+.btn.primary{background:var(--brand);color:white;border-color:var(--brand)}
+.btn.primary:hover{background:var(--brand-d);border-color:var(--brand-d)}
+.btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── PAGES ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── CARDS & GRIDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:13px;font-weight:600;color:var(--text)}
+.card-action{font-size:12px;color:var(--brand);cursor:pointer;border:none;background:none;font-family:inherit;font-weight:500}
+.card-action:hover{text-decoration:underline}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.mb{margin-bottom:14px}
+
+/* ── KPI CARDS ── */
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.kpi-label{font-size:11px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.kpi-value{font-size:24px;font-weight:700;color:var(--text);line-height:1}
+.kpi-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:4px;margin-top:6px;font-weight:500}
+.trend-up{background:var(--green-bg);color:var(--green)}
+.trend-dn{background:var(--red-bg);color:var(--red)}
+.trend-warn{background:var(--amber-bg);color:var(--amber)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+.badge-blue{background:var(--brand-l);color:var(--brand)}
+.badge-gray{background:#f1f5f9;color:var(--muted)}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 12px;font-size:11px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);font-size:12px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+.td-primary{font-weight:600;color:var(--text)}
+.td-secondary{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* ── ROWS ── */
+.list-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.list-row:last-child{border-bottom:none}
+.row-left{display:flex;align-items:center;gap:9px}
+.co-badge{width:28px;height:28px;border-radius:6px;background:var(--brand-l);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.row-name{font-size:13px;font-weight:500;color:var(--text)}
+.row-sub{font-size:11px;color:var(--muted)}
+
+/* ── CHECKS ── */
+.check-list{display:flex;flex-direction:column;gap:6px}
+.check-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.check-label{font-size:13px;color:var(--text)}
+.check-box{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.check-box.on{background:var(--brand);border-color:var(--brand)}
+.check-box svg{width:11px;height:11px;stroke:white;fill:none;stroke-width:2.5;display:none}
+.check-box.on svg{display:block}
+
+/* ── BARS ── */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-label{font-size:12px;color:var(--muted);width:110px;flex-shrink:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:7px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;background:var(--brand);transition:width .3s}
+.bar-fill.green{background:var(--green)}
+.bar-fill.amber{background:#f59e0b}
+.bar-fill.red{background:var(--red)}
+.bar-value{font-size:12px;font-weight:600;color:var(--text);width:35px;text-align:right;flex-shrink:0}
+
+/* ── PROGRESS ── */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.prog-info{flex:1}
+.prog-name{font-size:12px;color:var(--text);margin-bottom:3px}
+.prog-track{height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px}
+.prog-pct{font-size:12px;font-weight:600;width:32px;text-align:right;flex-shrink:0}
+
+/* ── MONTH GRID ── */
+.month-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:10px}
+.mcell{padding:7px 4px;text-align:center;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--bg);transition:all .15s}
+.mcell:hover{border-color:var(--brand-t)}
+.mcell.done{background:#dcfce7;border-color:#86efac}
+.mcell.partial{background:#fef9c3;border-color:#fde047}
+.mcell.pend{background:#fee2e2;border-color:#fca5a5}
+.mcell-name{font-size:10px;color:var(--muted);font-weight:500}
+.mcell-pct{font-size:13px;font-weight:700;color:var(--text)}
+
+/* ── DOT ── */
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-red{background:var(--red)}
+.dot-amber{background:#f59e0b}
+.dot-green{background:var(--green)}
+
+/* ── FILTER BAR ── */
+.filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-input{flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface);color:var(--text);font-family:inherit}
+.filter-input:focus{outline:none;border-color:var(--brand)}
+.filter-select{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface);color:var(--text);font-family:inherit;cursor:pointer}
+.filter-select:focus{outline:none;border-color:var(--brand)}
+.filter-tab{padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;background:var(--surface);color:var(--muted);font-family:inherit;transition:all .15s}
+.filter-tab:hover{border-color:var(--brand-t);color:var(--brand)}
+.filter-tab.active{background:var(--brand-l);color:var(--brand);border-color:var(--brand-t);font-weight:600}
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.4);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);width:480px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.modal-close:hover{background:var(--bg)}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.form-input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface);color:var(--text);font-family:inherit}
+.form-input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-l)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-select{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--surface);color:var(--text);font-family:inherit}
+.form-select:focus{outline:none;border-color:var(--brand)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:#1e293b;color:white;padding:12px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;display:flex;align-items:center;gap:8px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast-icon{width:16px;height:16px;flex-shrink:0}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{width:40px;height:40px;margin:0 auto 12px;opacity:.3}
+.empty p{font-size:14px}
+.empty small{font-size:12px;margin-top:4px;display:block}
+
+/* ── ALERT BANNER ── */
+.alert{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:14px;font-size:13px}
+.alert-red{background:var(--red-bg);border:1px solid var(--red-b);color:var(--red)}
+.alert-amber{background:var(--amber-bg);border:1px solid var(--amber-b);color:var(--amber)}
+.alert svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast">
+  <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 15.01 9 12.01"/></svg>
+  <span id="toast-msg">Guardado correctamente</span>
+</div>
+
+<!-- ── MODAL: Nueva Empresa ── -->
+<div class="modal-overlay" id="modal-empresa">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Nueva empresa</span>
+      <button class="modal-close" onclick="closeModal('modal-empresa')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Razón social *</label><input class="form-input" id="e-name" placeholder="Transportes Ejemplo SpA"></div>
+        <div class="form-group"><label class="form-label">RUT *</label><input class="form-input" id="e-rut" placeholder="76.543.210-K"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Giro</label><input class="form-input" id="e-giro" placeholder="Transporte de carga"></div>
+        <div class="form-group"><label class="form-label">Régimen tributario</label>
+          <select class="form-select" id="e-regime"><option>14A</option><option>14D</option><option>RUS</option><option>Otro</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Domicilio</label><input class="form-input" id="e-domicilio" placeholder="Av. Providencia 1234, Of. 501"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Región</label>
+          <select class="form-select" id="e-region" onchange="onRegionChange()">
+            <option value="">Selecciona región...</option>
+            <option value="Arica y Parinacota">Región de Arica y Parinacota</option>
+            <option value="Tarapacá">Región de Tarapacá</option>
+            <option value="Antofagasta">Región de Antofagasta</option>
+            <option value="Atacama">Región de Atacama</option>
+            <option value="Coquimbo">Región de Coquimbo</option>
+            <option value="Valparaíso">Región de Valparaíso</option>
+            <option value="Metropolitana">Región Metropolitana de Santiago</option>
+            <option value="O'Higgins">Región del Libertador Gral. Bernardo O'Higgins</option>
+            <option value="Maule">Región del Maule</option>
+            <option value="Ñuble">Región de Ñuble</option>
+            <option value="Biobío">Región del Biobío</option>
+            <option value="Araucanía">Región de La Araucanía</option>
+            <option value="Los Ríos">Región de Los Ríos</option>
+            <option value="Los Lagos">Región de Los Lagos</option>
+            <option value="Aysén">Región de Aysén del Gral. Carlos Ibáñez del Campo</option>
+            <option value="Magallanes">Región de Magallanes y de la Antártica Chilena</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Comuna</label>
+          <div style="position:relative">
+            <input class="form-input" id="e-comuna-search" placeholder="Escribe para buscar..." autocomplete="off"
+              oninput="filterComunas()" onfocus="showComunaDropdown()" onblur="hideComunaDropdown()"
+              disabled style="background:var(--bg);color:var(--muted);cursor:not-allowed">
+            <input type="hidden" id="e-comuna">
+            <div id="e-comuna-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);max-height:180px;overflow-y:auto;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.08)"></div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Contacto</label><input class="form-input" id="e-contact" placeholder="Juan Pérez"></div>
+        <div class="form-group"><label class="form-label">Email contacto</label><input class="form-input" id="e-email" placeholder="juan@empresa.cl"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Plan mensual</label><input class="form-input" id="e-plan" placeholder="3.5" type="number" step="0.1"></div>
+        <div class="form-group"><label class="form-label">Moneda plan</label>
+          <select class="form-select" id="e-moneda"><option value="uf">UF</option><option value="pesos">Pesos</option></select>
+        </div>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Credenciales SII</span>
+        </div>
+        <div class="form-row" style="margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Usuario SII</label>
+            <input class="form-input" id="e-sii-user" placeholder="RUT sin puntos ni guion" oninput="resetSIIStatus()">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Clave SII</label>
+            <div style="position:relative">
+              <input class="form-input" id="e-sii-clave" type="password" placeholder="Clave de acceso SII" style="padding-right:38px" oninput="resetSIIStatus()">
+              <button type="button" onclick="toggleSIIPass()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:0;display:flex">
+                <svg id="eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn" id="btn-validar-sii" onclick="validarSII()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 15.01 9 12.01"/></svg>
+            Validar en SII
+          </button>
+          <div id="sii-status" style="font-size:12px;display:flex;align-items:center;gap:5px;color:var(--muted)">
+            Ingresa usuario y clave para validar
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-empresa')">Cancelar</button>
+      <button class="btn primary" onclick="saveEmpresa()">Guardar empresa</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Nueva Tarea ── -->
+<div class="modal-overlay" id="modal-tarea">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Nueva tarea</span>
+      <button class="modal-close" onclick="closeModal('modal-tarea')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Título *</label><input class="form-input" id="t-title" placeholder="F29 Abril — Empresa..."></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Empresa</label>
+          <select class="form-select" id="t-empresa"></select>
+        </div>
+        <div class="form-group"><label class="form-label">Categoría</label>
+          <select class="form-select" id="t-cat">
+            <option>Tributarios</option><option>RRHH</option><option>Contabilidad</option><option>Legal</option><option>Otros</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Prioridad</label>
+          <select class="form-select" id="t-prio">
+            <option value="baja">Baja</option><option value="media" selected>Media</option><option value="alta">Alta</option><option value="urgente">Urgente</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Fecha vencimiento</label><input class="form-input" id="t-due" type="date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notas</label><textarea class="form-input" id="t-notes" rows="2" placeholder="Detalles adicionales..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-tarea')">Cancelar</button>
+      <button class="btn primary" onclick="saveTask()">Crear tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Nuevo Trabajador ── -->
+<div class="modal-overlay" id="modal-trabajador">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Nuevo trabajador</span>
+      <button class="modal-close" onclick="closeModal('modal-trabajador')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nombre completo *</label><input class="form-input" id="w-name" placeholder="Juan Pérez Soto"></div>
+        <div class="form-group"><label class="form-label">RUT *</label><input class="form-input" id="w-rut" placeholder="15.234.567-8"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Empresa</label><select class="form-select" id="w-empresa"></select></div>
+        <div class="form-group"><label class="form-label">Cargo</label><input class="form-input" id="w-cargo" placeholder="Conductor"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tipo contrato</label>
+          <select class="form-select" id="w-contrato">
+            <option value="indefinido">Indefinido</option><option value="plazo_fijo">Plazo fijo</option><option value="honorarios">Honorarios</option><option value="practicante">Practicante</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Sueldo base</label><input class="form-input" id="w-sueldo" type="number" placeholder="650000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">AFP</label><select class="form-select" id="w-afp"><option>Habitat</option><option>Provida</option><option>Capital</option><option>Cuprum</option><option>Modelo</option><option>Uno</option></select></div>
+        <div class="form-group"><label class="form-label">ISAPRE / FONASA</label><input class="form-input" id="w-isapre" placeholder="FONASA"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Fecha ingreso</label><input class="form-input" id="w-ingreso" type="date"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-trabajador')">Cancelar</button>
+      <button class="btn primary" onclick="saveTrabajador()">Agregar trabajador</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ APP SHELL ═══════════════════════════════════════ -->
+<div class="shell">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">
+      <div class="sb-icon"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
+      <div><div class="sb-name">ContaOffice</div><div class="sb-plan">Plan Estudio · Demo</div></div>
+    </div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-section">Principal</div>
+    <button class="nav-item active" id="ni-dashboard" onclick="goTo('dashboard')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Panel
+    </button>
+    <button class="nav-item" id="ni-empresas" onclick="goTo('empresas')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>Empresas
+    </button>
+    <button class="nav-item" id="ni-tareas" onclick="goTo('tareas')">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><path d="M9 12h6M9 16h4"/></svg>Tareas <span id="tasks-badge" style="margin-left:auto;background:var(--red-bg);color:var(--red);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px"></span>
+    </button>
+    <div class="sb-section">Tributario</div>
+    <button class="nav-item" id="ni-tributarios" onclick="goTo('tributarios')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Tributarios
+    </button>
+    <button class="nav-item" id="ni-balance" onclick="goTo('balance')">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Balance
+    </button>
+    <div class="sb-section">RRHH</div>
+    <button class="nav-item" id="ni-trabajadores" onclick="goTo('trabajadores')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Trabajadores
+    </button>
+    <button class="nav-item" id="ni-rrhh" onclick="goTo('rrhh')">
+      <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>RRHH
+    </button>
+    <div class="sb-section">Análisis</div>
+    <button class="nav-item" id="ni-reportes" onclick="goTo('reportes')">
+      <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Reportes
+    </button>
+    <button class="nav-item" id="ni-auditoria" onclick="goTo('auditoria')">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Auditoría
+    </button>
+  </div>
+  <div class="sb-footer">
+    <button class="user-btn">
+      <div class="avatar">MG</div>
+      <div><div class="user-name">María González</div><div class="user-role">Administradora</div></div>
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-title" id="page-title">Panel de control</div>
+      <div class="tb-sub" id="page-sub">Resumen de actividad · Abril 2026</div>
+    </div>
+    <div class="tb-right" id="page-actions"></div>
+  </div>
+  <div class="content" id="content">
+
+    <!-- ══════════ DASHBOARD ══════════ -->
+    <div class="page active" id="p-dashboard">
+      <div id="dash-alerts"></div>
+      <div class="g4" id="dash-kpis"></div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Empresas activas</span><button class="card-action" onclick="goTo('empresas')">Ver todas →</button></div>
+          <div id="dash-empresas"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Próximos vencimientos</span><button class="card-action" onclick="goTo('tributarios')">Ver todos →</button></div>
+          <div id="dash-vencimientos"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Tareas activas</span><button class="card-action" onclick="goTo('tareas')">Ver todas →</button></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Tarea</th><th>Empresa</th><th>Categoría</th><th>Vence</th><th>Prioridad</th><th>Estado</th></tr></thead><tbody id="dash-tasks"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ══════════ EMPRESAS ══════════ -->
+    <div class="page" id="p-empresas">
+      <div class="filters">
+        <input class="filter-input" id="f-empresa" placeholder="Buscar empresa o RUT..." oninput="renderEmpresas()">
+        <select class="filter-select" id="f-empresa-status" onchange="renderEmpresas()"><option value="">Todos los estados</option><option value="activo">Activo</option><option value="inactivo">Inactivo</option></select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Empresa</th><th>RUT</th><th>Giro</th><th>Régimen</th><th>Plan</th><th>RRHH</th><th>SII</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="tbl-empresas"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══════════ TAREAS ══════════ -->
+    <div class="page" id="p-tareas">
+      <div class="filters">
+        <input class="filter-input" id="f-tarea" placeholder="Buscar tarea o empresa..." oninput="renderTareas()">
+        <select class="filter-select" id="f-tarea-cat" onchange="renderTareas()"><option value="">Todas las categorías</option><option>Tributarios</option><option>RRHH</option><option>Contabilidad</option><option>Legal</option><option>Otros</option></select>
+        <select class="filter-select" id="f-tarea-status" onchange="renderTareas()"><option value="">Todos los estados</option><option value="pendiente">Pendiente</option><option value="en_progreso">En progreso</option><option value="completada">Completada</option></select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Tarea</th><th>Empresa</th><th>Categoría</th><th>Vence</th><th>Prioridad</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="tbl-tareas"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══════════ TRIBUTARIOS ══════════ -->
+    <div class="page" id="p-tributarios">
+      <div class="filters">
+        <button class="filter-tab active" onclick="setTribTab('iva',this)">IVA</button>
+        <button class="filter-tab" onclick="setTribTab('renta',this)">Renta anual</button>
+        <button class="filter-tab" onclick="setTribTab('dj',this)">Declaraciones juradas</button>
+        <select class="filter-select" id="f-trib-empresa" onchange="renderTributarios()" style="margin-left:auto">
+          <option value="">Todas las empresas</option>
+        </select>
+      </div>
+      <div id="trib-content"></div>
+    </div>
+
+    <!-- ══════════ BALANCE ══════════ -->
+    <div class="page" id="p-balance">
+      <div class="filters">
+        <select class="filter-select" id="f-bal-anio" onchange="renderBalance()"><option>2026</option><option>2025</option></select>
+        <select class="filter-select" id="f-bal-mes" onchange="renderBalance()">
+          <option value="Enero">Enero</option><option value="Febrero">Febrero</option><option value="Marzo">Marzo</option><option value="Abril" selected>Abril</option><option value="Mayo">Mayo</option><option value="Junio">Junio</option>
+          <option value="Julio">Julio</option><option value="Agosto">Agosto</option><option value="Septiembre">Septiembre</option><option value="Octubre">Octubre</option><option value="Noviembre">Noviembre</option><option value="Diciembre">Diciembre</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Empresa</th><th>Compras</th><th>Ventas</th><th>Honorarios</th><th>RRHH</th><th>Otros</th><th>Mes procesado</th><th>Mes cerrado</th><th>VB Supervisor</th></tr></thead>
+          <tbody id="tbl-balance"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══════════ TRABAJADORES ══════════ -->
+    <div class="page" id="p-trabajadores">
+      <div class="filters">
+        <input class="filter-input" id="f-trab" placeholder="Buscar trabajador o RUT..." oninput="renderTrabajadores()">
+        <select class="filter-select" id="f-trab-empresa" onchange="renderTrabajadores()"><option value="">Todas las empresas</option></select>
+        <select class="filter-select" id="f-trab-status" onchange="renderTrabajadores()"><option value="">Todos</option><option value="activo">Activos</option><option value="inactivo">Inactivos</option></select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Trabajador</th><th>RUT</th><th>Empresa</th><th>Cargo</th><th>Contrato</th><th>AFP</th><th>Sueldo base</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="tbl-trabajadores"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══════════ RRHH ══════════ -->
+    <div class="page" id="p-rrhh">
+      <div class="filters">
+        <select class="filter-select" id="f-rrhh-empresa" onchange="renderRRHH()"><option value="">Selecciona empresa...</option></select>
+        <select class="filter-select" id="f-rrhh-mes" onchange="renderRRHH()">
+          <option>Enero</option><option>Febrero</option><option>Marzo</option><option selected>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+        </select>
+      </div>
+      <div id="rrhh-content"></div>
+    </div>
+
+    <!-- ══════════ REPORTES ══════════ -->
+    <div class="page" id="p-reportes">
+      <div class="g2 mb">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Ingresos proyectados 2026</span></div>
+          <div id="rep-ingresos"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Empresas nuevas por mes</span></div>
+          <div id="rep-nuevas"></div>
+        </div>
+      </div>
+      <div class="card mb">
+        <div class="card-header"><span class="card-title">Cumplimiento tributario por empresa</span><div style="display:flex;gap:8px"><button class="btn" onclick="toast('Exportado a Excel')">Excel</button><button class="btn" onclick="toast('PDF generado')">PDF</button></div></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Empresa</th><th>IVA al día</th><th>Renta</th><th>DJ</th><th>% cumplimiento</th></tr></thead>
+          <tbody id="tbl-cumplimiento"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ══════════ AUDITORÍA ══════════ -->
+    <div class="page" id="p-auditoria">
+      <div class="filters">
+        <select class="filter-select" id="f-audit-accion" onchange="renderAuditoria()"><option value="">Todas las acciones</option><option value="crear">Crear</option><option value="actualizar">Actualizar</option><option value="eliminar">Eliminar</option></select>
+        <select class="filter-select" id="f-audit-entidad" onchange="renderAuditoria()"><option value="">Todas las entidades</option><option>Company</option><option>Task</option><option>Trabajador</option><option>IVA</option><option>CumplimientoRRHH</option></select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Fecha</th><th>Usuario</th><th>Entidad</th><th>Acción</th><th>Detalle</th></tr></thead>
+          <tbody id="tbl-auditoria"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA STORE
+// ═══════════════════════════════════════════════════════
+let DB = {
+  empresas: [
+    {id:1,name:'Transportes Larrondo SpA',rut:'76.543.210-K',giro:'Transporte de carga',regime:'14A',plan:4.2,moneda:'uf',contact:'Carlos Larrondo',email:'carlos@larrondo.cl',domicilio:'',region:'',comuna:'',has_rrhh:true,usuario_sii:'76543210',status:'activo'},
+    {id:2,name:'Comercial Martínez Ltda.',rut:'12.345.678-9',giro:'Comercio al por mayor',regime:'14D',plan:3.5,moneda:'uf',contact:'Ana Martínez',email:'ana@martinez.cl',has_rrhh:true,usuario_sii:'12345678',status:'activo'},
+    {id:3,name:'Agrícola Becerra e Hijos',rut:'99.123.456-3',giro:'Agricultura',regime:'RUS',plan:2.0,moneda:'uf',contact:'Pedro Becerra',email:'pedro@becerra.cl',has_rrhh:false,usuario_sii:'',status:'activo'},
+    {id:4,name:'Servicios Ramos y Cía.',rut:'78.901.234-5',giro:'Servicios generales',regime:'14A',plan:3.0,moneda:'uf',contact:'Luis Ramos',email:'luis@ramos.cl',has_rrhh:true,usuario_sii:'78901234',status:'activo'},
+    {id:5,name:'Constructora Vega S.A.',rut:'65.432.109-8',giro:'Construcción',regime:'14A',plan:5.0,moneda:'uf',contact:'Sofía Vega',email:'sofia@vega.cl',has_rrhh:true,usuario_sii:'65432109',status:'activo'},
+    {id:6,name:'Importadora del Norte',rut:'54.321.098-7',giro:'Importación y distribución',regime:'14D',plan:2.8,moneda:'uf',contact:'Tomás Núñez',email:'tomas@norte.cl',has_rrhh:false,usuario_sii:'',status:'inactivo'},
+  ],
+  tareas: [
+    {id:1,title:'F29 Marzo',empresa_id:1,cat:'Tributarios',prio:'urgente',status:'en_progreso',due:'2026-04-01',notes:''},
+    {id:2,title:'Liquidaciones Marzo',empresa_id:2,cat:'RRHH',prio:'urgente',status:'pendiente',due:'2026-04-15',notes:''},
+    {id:3,title:'Declaración de Renta 2026',empresa_id:2,cat:'Tributarios',prio:'media',status:'pendiente',due:'2026-04-30',notes:''},
+    {id:4,title:'DJ 1879',empresa_id:3,cat:'Tributarios',prio:'media',status:'pendiente',due:'2026-04-30',notes:''},
+    {id:5,title:'Contrato de trabajo — nuevo empleado',empresa_id:4,cat:'Legal',prio:'baja',status:'pendiente',due:'',notes:''},
+    {id:6,title:'Balance Marzo',empresa_id:5,cat:'Contabilidad',prio:'media',status:'completada',due:'2026-04-20',notes:''},
+    {id:7,title:'Inicio de actividades',empresa_id:3,cat:'Tributarios',prio:'alta',status:'pendiente',due:'2026-04-12',notes:''},
+  ],
+  trabajadores: [
+    {id:1,name:'Juan Pérez Soto',rut:'15.234.567-8',empresa_id:1,cargo:'Conductor',contrato:'indefinido',afp:'Habitat',isapre:'FONASA',sueldo:650000,ingreso:'2021-03-15',status:'activo'},
+    {id:2,name:'Rosa Silva Muñoz',rut:'12.987.654-3',empresa_id:2,cargo:'Vendedora',contrato:'indefinido',afp:'Provida',isapre:'Banmédica',sueldo:580000,ingreso:'2019-08-01',status:'activo'},
+    {id:3,name:'Mario Díaz López',rut:'18.765.432-1',empresa_id:4,cargo:'Técnico',contrato:'plazo_fijo',afp:'Capital',isapre:'FONASA',sueldo:720000,ingreso:'2025-01-02',status:'activo'},
+    {id:4,name:'Claudia Torres Vera',rut:'16.543.210-9',empresa_id:5,cargo:'Administrativa',contrato:'indefinido',afp:'Cuprum',isapre:'FONASA',sueldo:610000,ingreso:'2020-05-20',status:'activo'},
+    {id:5,name:'Roberto Araya Pino',rut:'11.222.333-4',empresa_id:1,cargo:'Despachador',contrato:'indefinido',afp:'Modelo',isapre:'FONASA',sueldo:560000,ingreso:'2022-09-10',status:'activo'},
+    {id:6,name:'Karina Flores Rojas',rut:'17.888.999-5',empresa_id:2,cargo:'Cajera',contrato:'plazo_fijo',afp:'Habitat',isapre:'Cruz Blanca',sueldo:500000,ingreso:'2025-02-01',status:'activo'},
+  ],
+  iva: {
+    1:{Enero:{f29:true,aviso:true,monto:284300},Febrero:{f29:true,aviso:true,monto:312100},Marzo:{f29:true,aviso:false,monto:195600},Abril:{f29:false,aviso:false,monto:null}},
+    2:{Enero:{f29:true,aviso:true,monto:541000},Febrero:{f29:true,aviso:true,monto:498200},Marzo:{f29:true,aviso:true,monto:612300},Abril:{f29:true,aviso:false,monto:null}},
+    3:{Enero:{f29:true,aviso:true,monto:98000},Febrero:{f29:true,aviso:true,monto:112000},Marzo:{f29:false,aviso:false,monto:null},Abril:{f29:false,aviso:false,monto:null}},
+    4:{Enero:{f29:true,aviso:true,monto:178000},Febrero:{f29:true,aviso:true,monto:192000},Marzo:{f29:true,aviso:true,monto:215000},Abril:{f29:true,aviso:true,monto:180000}},
+    5:{Enero:{f29:true,aviso:true,monto:892000},Febrero:{f29:true,aviso:true,monto:954000},Marzo:{f29:true,aviso:true,monto:1012000},Abril:{f29:false,aviso:false,monto:null}},
+  },
+  renta: {
+    1:{estado:'en_proceso',monto:null,aviso:false},
+    2:{estado:'aceptada',monto:-180000,aviso:true},
+    3:{estado:'pendiente',monto:null,aviso:false},
+    4:{estado:'aceptada',monto:95000,aviso:true},
+    5:{estado:'presentada',monto:320000,aviso:false},
+  },
+  balance: {
+    1:{compra:true,venta:true,honorarios:true,rrhh:true,otros:false,mes_procesado:false,mes_cerrado:false,vb:false},
+    2:{compra:true,venta:true,honorarios:false,rrhh:true,otros:false,mes_procesado:false,mes_cerrado:false,vb:false},
+    3:{compra:true,venta:false,honorarios:false,rrhh:false,otros:false,mes_procesado:false,mes_cerrado:false,vb:false},
+    4:{compra:true,venta:true,honorarios:true,rrhh:true,otros:true,mes_procesado:true,mes_cerrado:true,vb:true},
+    5:{compra:true,venta:true,honorarios:true,rrhh:true,otros:false,mes_procesado:true,mes_cerrado:false,vb:false},
+  },
+  cumplimientoRRHH: {
+    1:{liquidacion:{solicitud:true,procesada:true,vb:false,enviada:false},imposiciones:{previred:true,aviso:false,monto:184200},libro:{subido:false}},
+    2:{liquidacion:{solicitud:true,procesada:true,vb:true,enviada:true},imposiciones:{previred:true,aviso:true,monto:312000},libro:{subido:true}},
+    4:{liquidacion:{solicitud:false,procesada:false,vb:false,enviada:false},imposiciones:{previred:false,aviso:false,monto:null},libro:{subido:false}},
+    5:{liquidacion:{solicitud:true,procesada:true,vb:true,enviada:false},imposiciones:{previred:true,aviso:false,monto:421000},libro:{subido:false}},
+  },
+  auditoria: [
+    {fecha:'03 Abr 10:24',user:'María González',entidad:'IVA',accion:'actualizar',detalle:'Marcó F29 Marzo — Transportes Larrondo como procesado'},
+    {fecha:'03 Abr 09:51',user:'María González',entidad:'Task',accion:'crear',detalle:'Nueva tarea: "Renta 2026 — Comercial Martínez"'},
+    {fecha:'02 Abr 17:33',user:'Pedro Soto',entidad:'Trabajador',accion:'crear',detalle:'Nuevo trabajador: Mario Díaz López ingresado'},
+    {fecha:'02 Abr 15:10',user:'María González',entidad:'Company',accion:'actualizar',detalle:'Actualizó clave SII de Agrícola Becerra'},
+    {fecha:'02 Abr 11:05',user:'Pedro Soto',entidad:'CumplimientoRRHH',accion:'crear',detalle:'Previred Marzo — Servicios Ramos registrado'},
+    {fecha:'01 Abr 16:42',user:'María González',entidad:'Company',accion:'actualizar',detalle:'Importadora del Norte pasó a estado inactivo'},
+    {fecha:'01 Abr 14:20',user:'María González',entidad:'Task',accion:'actualizar',detalle:'Balance Marzo — Constructora Vega marcado como completado'},
+    {fecha:'31 Mar 18:01',user:'Pedro Soto',entidad:'IVA',accion:'crear',detalle:'Registro IVA Marzo — Servicios Ramos creado'},
+  ]
+};
+
+let currentTribTab = 'iva';
+let nextId = 100;
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+const emp = id => DB.empresas.find(e=>e.id===id);
+const empName = id => emp(id)?.name || '—';
+const fmt = n => n ? '$'+n.toLocaleString('es-CL') : '—';
+const fmtDate = s => s ? new Date(s+'T12:00:00').toLocaleDateString('es-CL',{day:'2-digit',month:'short'}) : '—';
+const isOverdue = s => s && new Date(s+'T23:59:59') < new Date();
+
+function badge(txt,cls){return `<span class="badge badge-${cls}">${txt}</span>`;}
+function prioBadge(p){const m={urgente:'red',alta:'red',media:'amber',baja:'green'};return badge(p,m[p]||'gray');}
+function statusBadge(s){const m={pendiente:'gray',en_progreso:'blue',completada:'green',cancelada:'gray',activo:'green',inactivo:'red'};return badge(s.replace('_',' '),m[s]||'gray');}
+function checkBadge(v){return v?badge('ok','green'):badge('pend.','amber');}
+function rentaBadge(s){const m={aceptada:'green',presentada:'blue',en_proceso:'amber',pendiente:'gray',observada:'red',rectificada:'amber'};return badge(s.replace('_',' '),m[s]||'gray');}
+
+function toast(msg,ok=true){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function addAudit(entidad,accion,detalle){
+  DB.auditoria.unshift({fecha:new Date().toLocaleString('es-CL',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}),user:'María González',entidad,accion,detalle});
+}
+
+function openModal(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='modal-tarea'||id==='modal-trabajador') populateEmpresaSelects();
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function populateEmpresaSelects(){
+  ['t-empresa','w-empresa'].forEach(sid=>{
+    const s=document.getElementById(sid);if(!s)return;
+    s.innerHTML=DB.empresas.filter(e=>e.status==='activo').map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  });
+  const fTrib=document.getElementById('f-trib-empresa');
+  if(fTrib) fTrib.innerHTML='<option value="">Todas las empresas</option>'+DB.empresas.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  ['f-trab-empresa','f-rrhh-empresa'].forEach(sid=>{
+    const s=document.getElementById(sid);if(!s)return;
+    const prefix=sid==='f-rrhh-empresa'?'<option value="">Selecciona empresa...</option>':'<option value="">Todas las empresas</option>';
+    s.innerHTML=prefix+DB.empresas.filter(e=>e.status==='activo'&&e.has_rrhh!==false).map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+const pageMeta={
+  dashboard:{title:'Panel de control',sub:'Resumen de actividad · Abril 2026',actions:()=>`<button class="btn primary" onclick="openModal('modal-empresa')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nueva empresa</button>`},
+  empresas:{title:'Empresas',sub:()=>`${DB.empresas.filter(e=>e.status==='activo').length} activas`,actions:()=>`<button class="btn" onclick="toast('Importación no disponible en demo')">Importar CSV</button><button class="btn primary" onclick="openModal('modal-empresa')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nueva empresa</button>`},
+  tareas:{title:'Tareas',sub:()=>`${DB.tareas.filter(t=>t.status!=='completada'&&t.status!=='cancelada').length} activas`,actions:()=>`<button class="btn primary" onclick="openModal('modal-tarea')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nueva tarea</button>`},
+  tributarios:{title:'Tributarios',sub:'IVA · Renta · Declaraciones Juradas',actions:()=>`<button class="btn" onclick="toast('Sincronizando con SII...')">Sincronizar SII</button>`},
+  balance:{title:'Balance contable',sub:'Control de cierre mensual',actions:()=>`<button class="btn" onclick="toast('Exportado a Excel')">Exportar Excel</button>`},
+  trabajadores:{title:'Trabajadores',sub:()=>`${DB.trabajadores.filter(t=>t.status==='activo').length} activos`,actions:()=>`<button class="btn primary" onclick="openModal('modal-trabajador')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nuevo trabajador</button>`},
+  rrhh:{title:'RRHH',sub:'Cumplimiento de nómina mensual',actions:()=>`<button class="btn primary" onclick="saveRRHH()">Guardar cambios</button>`},
+  reportes:{title:'Reportes',sub:'Indicadores y exportaciones',actions:()=>`<button class="btn" onclick="toast('Reporte PDF generado')">Exportar PDF</button>`},
+  auditoria:{title:'Auditoría',sub:'Registro de cambios del sistema',actions:()=>''},
+};
+
+function goTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('p-'+page).classList.add('active');
+  document.getElementById('ni-'+page).classList.add('active');
+  const m=pageMeta[page];
+  document.getElementById('page-title').textContent=m.title;
+  document.getElementById('page-sub').textContent=typeof m.sub==='function'?m.sub():m.sub||'';
+  document.getElementById('page-actions').innerHTML=typeof m.actions==='function'?m.actions():'';
+  document.getElementById('content').scrollTop=0;
+  renderPage(page);
+}
+
+function renderPage(page){
+  populateEmpresaSelects();
+  const r={dashboard:renderDashboard,empresas:renderEmpresas,tareas:renderTareas,tributarios:renderTributarios,balance:renderBalance,trabajadores:renderTrabajadores,rrhh:renderRRHH,reportes:renderReportes,auditoria:renderAuditoria};
+  if(r[page]) r[page]();
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderDashboard(){
+  const activas=DB.empresas.filter(e=>e.status==='activo').length;
+  const pendientes=DB.tareas.filter(t=>t.status!=='completada'&&t.status!=='cancelada').length;
+  const vencidas=DB.tareas.filter(t=>t.status!=='completada'&&t.status!=='cancelada'&&isOverdue(t.due)).length;
+  const completadas=DB.tareas.filter(t=>t.status==='completada').length;
+  document.getElementById('tasks-badge').textContent=pendientes||'';
+  document.getElementById('dash-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-label">Empresas activas</div><div class="kpi-value">${activas}</div><div class="kpi-trend trend-up">+3 este mes</div></div>
+    <div class="kpi"><div class="kpi-label">Tareas pendientes</div><div class="kpi-value">${pendientes}</div><div class="kpi-trend ${vencidas>0?'trend-dn':'trend-warn'}">${vencidas} vencidas</div></div>
+    <div class="kpi"><div class="kpi-label">Cumplimiento SII</div><div class="kpi-value">91%</div><div class="kpi-trend trend-up">+4% vs mes ant.</div></div>
+    <div class="kpi"><div class="kpi-label">Tareas completadas</div><div class="kpi-value">${completadas}</div><div class="kpi-trend trend-up">este mes</div></div>`;
+
+  if(vencidas>0) document.getElementById('dash-alerts').innerHTML=`<div class="alert alert-red"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>${vencidas} tarea${vencidas>1?'s':''} vencida${vencidas>1?'s':''}. <strong style="cursor:pointer;text-decoration:underline" onclick="goTo('tareas')">Revisar ahora →</strong></div>`;
+  else document.getElementById('dash-alerts').innerHTML='';
+
+  document.getElementById('dash-empresas').innerHTML=DB.empresas.filter(e=>e.status==='activo').slice(0,5).map(e=>`
+    <div class="list-row"><div class="row-left"><div class="co-badge">${e.name.split(' ').slice(0,2).map(w=>w[0]).join('').slice(0,2)}</div><div><div class="row-name">${e.name}</div><div class="row-sub">${e.rut}</div></div></div>${statusBadge(e.status)}</div>`).join('');
+
+  const venc=[
+    {dot:'dot-red',name:'F29 — Transportes Larrondo',date:'Venció 01 Abr',badge:'urgente',bcls:'red'},
+    {dot:'dot-amber',name:'Renta 2026 — Comercial Martínez',date:'30 Abr 2026',badge:'12 días',bcls:'amber'},
+    {dot:'dot-amber',name:'DJ 1879 — Agrícola Becerra',date:'30 Abr 2026',badge:'12 días',bcls:'amber'},
+    {dot:'dot-green',name:'Previred — Servicios Ramos',date:'10 May 2026',badge:'ok',bcls:'green'},
+  ];
+  document.getElementById('dash-vencimientos').innerHTML=venc.map(v=>`
+    <div class="list-row"><div class="row-left"><div class="dot ${v.dot}"></div><div><div class="row-name">${v.name}</div><div class="row-sub">${v.date}</div></div></div>${badge(v.badge,'badge-'+v.bcls.replace('badge-',''))} </div>`).join('');
+
+  document.getElementById('dash-tasks').innerHTML=DB.tareas.filter(t=>t.status!=='completada').slice(0,6).map(t=>`
+    <tr><td><div class="td-primary">${t.title}</div></td><td>${empName(t.empresa_id)}</td><td>${t.cat}</td>
+    <td style="color:${isOverdue(t.due)?'var(--red)':''}">${fmtDate(t.due)}</td><td>${prioBadge(t.prio)}</td><td>${statusBadge(t.status)}</td></tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// EMPRESAS
+// ═══════════════════════════════════════════════════════
+function renderEmpresas(){
+  const q=(document.getElementById('f-empresa')?.value||'').toLowerCase();
+  const s=document.getElementById('f-empresa-status')?.value||'';
+  const rows=DB.empresas.filter(e=>{
+    if(s&&e.status!==s)return false;
+    if(q&&!e.name.toLowerCase().includes(q)&&!e.rut.includes(q))return false;
+    return true;
+  });
+  document.getElementById('tbl-empresas').innerHTML=rows.map(e=>`
+    <tr><td><div class="td-primary">${e.name}</div><div class="td-secondary">${e.contact}</div></td>
+    <td>${e.rut}</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.giro||'—'}</td>
+    <td>${e.regime||'—'}</td><td>${e.plan?`${e.plan} ${e.moneda.toUpperCase()}`:'—'}</td>
+    <td>${e.has_rrhh?badge('Sí','green'):badge('No','gray')}</td>
+    <td>${e.usuario_sii?badge('Sí','green'):badge('No','amber')}</td>
+    <td>${statusBadge(e.status)}</td>
+    <td><button class="btn" style="padding:4px 10px;font-size:11px" onclick="deleteEmpresa(${e.id})">Eliminar</button></td></tr>`).join('');
+}
+
+// ── Validación SII ──────────────────────────────────────────────────────────
+const API_URL = 'http://localhost:4000/api';
+let siiValidado = false;
+
+function resetSIIStatus(){
+  siiValidado = false;
+  const s = document.getElementById('sii-status');
+  if(s) s.innerHTML = '<span style="color:var(--muted)">Ingresa usuario y clave para validar</span>';
+}
+
+function toggleSIIPass(){
+  const input = document.getElementById('e-sii-clave');
+  const icon  = document.getElementById('eye-icon');
+  if(!input) return;
+  if(input.type === 'password'){
+    input.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    input.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+async function validarSII(){
+  const rut   = document.getElementById('e-sii-user')?.value.trim();
+  const clave = document.getElementById('e-sii-clave')?.value.trim();
+  const btn   = document.getElementById('btn-validar-sii');
+  const status = document.getElementById('sii-status');
+
+  if(!rut || !clave){
+    status.innerHTML = '<span style="color:var(--amber)">⚠ Ingresa usuario y clave primero</span>';
+    return;
+  }
+
+  // Estado: cargando
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin .8s linear infinite"><path d="M21 12a9 9 0 11-6.22-8.56"/></svg> Validando...';
+  status.innerHTML = '<span style="color:var(--muted)">Conectando con el SII...</span>';
+
+  // Agregar animación de giro si no existe
+  if(!document.getElementById('spin-style')){
+    const st = document.createElement('style');
+    st.id = 'spin-style';
+    st.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+    document.head.appendChild(st);
+  }
+
+  try {
+    const token = localStorage.getItem('contaoffice_token');
+    const res = await fetch(`${API_URL}/funciones/validar-sii`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ rut, clave }),
+    });
+    const data = await res.json();
+
+    if(data.valid === true){
+      siiValidado = true;
+      status.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 15.01 9 12.01"/></svg>
+        <span style="color:var(--green);font-weight:600">Credenciales válidas</span>
+        ${data.nombreContribuyente ? `<span style="color:var(--muted)">— ${data.nombreContribuyente}</span>` : ''}`;
+    } else if(data.valid === false){
+      siiValidado = false;
+      status.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        <span style="color:var(--red);font-weight:600">RUT o clave incorrectos</span>`;
+    } else if(data.error){
+      // Backend no disponible o error
+      status.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span style="color:var(--amber)">Backend no disponible — se guardará sin validar</span>`;
+    } else {
+      status.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span style="color:var(--amber)">No se pudo determinar — verifica en sii.cl</span>`;
+    }
+  } catch(err){
+    // Sin backend corriendo — modo demo
+    status.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span style="color:var(--amber)">Backend no disponible (modo demo) — se guardará sin validar</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 15.01 9 12.01"/></svg> Validar en SII';
+  }
+}
+
+function saveEmpresa(){
+  const name=document.getElementById('e-name').value.trim();
+  const rut=document.getElementById('e-rut').value.trim();
+  if(!name||!rut){toast('Nombre y RUT son requeridos');return;}
+  const e={id:nextId++,name,rut,giro:document.getElementById('e-giro').value,regime:document.getElementById('e-regime').value,plan:parseFloat(document.getElementById('e-plan').value)||null,moneda:document.getElementById('e-moneda').value,contact:document.getElementById('e-contact').value,email:document.getElementById('e-email').value,domicilio:document.getElementById('e-domicilio').value,region:document.getElementById('e-region').value,comuna:document.getElementById('e-comuna').value,has_rrhh:true,usuario_sii:document.getElementById('e-sii-user').value,clave_sii:document.getElementById('e-sii-clave').value,clave_sii_verificada:siiValidado,status:'activo'};
+  DB.empresas.push(e);
+  addAudit('Company','crear',`Nueva empresa: "${name}"`);
+  closeModal('modal-empresa');
+  siiValidado=false;resetSIIStatus();
+  ['e-name','e-rut','e-giro','e-domicilio','e-contact','e-email','e-plan','e-sii-user','e-sii-clave'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const cs=document.getElementById('e-comuna-search');if(cs){cs.value='';cs.disabled=true;cs.style.background='var(--bg)';cs.style.color='var(--muted)';cs.style.cursor='not-allowed';cs.placeholder='Escribe para buscar...';}
+  const cv=document.getElementById('e-comuna');if(cv)cv.value='';
+  const rs=document.getElementById('e-region');if(rs)rs.value='';;
+  toast(`Empresa "${name}" creada correctamente`);
+  renderEmpresas();
+  document.getElementById('page-sub').textContent=`${DB.empresas.filter(e=>e.status==='activo').length} activas`;
+}
+
+function deleteEmpresa(id){
+  if(!confirm('¿Eliminar esta empresa? Esta acción no se puede deshacer.'))return;
+  const e=emp(id);
+  DB.empresas=DB.empresas.filter(x=>x.id!==id);
+  addAudit('Company','eliminar',`Empresa "${e?.name}" eliminada`);
+  toast('Empresa eliminada');
+  renderEmpresas();
+}
+
+// ═══════════════════════════════════════════════════════
+// TAREAS
+// ═══════════════════════════════════════════════════════
+function renderTareas(){
+  const q=(document.getElementById('f-tarea')?.value||'').toLowerCase();
+  const cat=document.getElementById('f-tarea-cat')?.value||'';
+  const st=document.getElementById('f-tarea-status')?.value||'';
+  const rows=DB.tareas.filter(t=>{
+    if(cat&&t.cat!==cat)return false;
+    if(st&&t.status!==st)return false;
+    if(q&&!t.title.toLowerCase().includes(q)&&!empName(t.empresa_id).toLowerCase().includes(q))return false;
+    return true;
+  });
+  document.getElementById('tbl-tareas').innerHTML=rows.length?rows.map(t=>`
+    <tr><td><div class="td-primary">${t.title}</div>${t.notes?`<div class="td-secondary">${t.notes}</div>`:''}</td>
+    <td>${empName(t.empresa_id)}</td><td>${t.cat}</td>
+    <td style="color:${isOverdue(t.due)&&t.status!=='completada'?'var(--red)':'inherit'}">${fmtDate(t.due)}</td>
+    <td>${prioBadge(t.prio)}</td><td>${statusBadge(t.status)}</td>
+    <td style="display:flex;gap:4px">
+      ${t.status!=='completada'?`<button class="btn" style="padding:4px 8px;font-size:11px" onclick="completeTask(${t.id})">✓</button>`:''}
+      <button class="btn" style="padding:4px 8px;font-size:11px;color:var(--red)" onclick="deleteTask(${t.id})">✕</button>
+    </td></tr>`).join(''):`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">No hay tareas con estos filtros</td></tr>`;
+  document.getElementById('tasks-badge').textContent=DB.tareas.filter(t=>t.status!=='completada'&&t.status!=='cancelada').length||'';
+}
+
+function saveTask(){
+  const title=document.getElementById('t-title').value.trim();
+  if(!title){toast('El título es requerido');return;}
+  const t={id:nextId++,title,empresa_id:parseInt(document.getElementById('t-empresa').value)||null,cat:document.getElementById('t-cat').value,prio:document.getElementById('t-prio').value,status:'pendiente',due:document.getElementById('t-due').value,notes:document.getElementById('t-notes').value};
+  DB.tareas.unshift(t);
+  addAudit('Task','crear',`Nueva tarea: "${title}"`);
+  closeModal('modal-tarea');
+  document.getElementById('t-title').value='';document.getElementById('t-notes').value='';document.getElementById('t-due').value='';
+  toast(`Tarea "${title}" creada`);
+  renderTareas();
+}
+
+function completeTask(id){
+  const t=DB.tareas.find(x=>x.id===id);
+  if(t){t.status='completada';addAudit('Task','actualizar',`Tarea "${t.title}" marcada como completada`);}
+  toast('Tarea completada');
+  renderTareas();
+}
+
+function deleteTask(id){
+  const t=DB.tareas.find(x=>x.id===id);
+  DB.tareas=DB.tareas.filter(x=>x.id!==id);
+  addAudit('Task','eliminar',`Tarea "${t?.title}" eliminada`);
+  toast('Tarea eliminada');
+  renderTareas();
+}
+
+// ═══════════════════════════════════════════════════════
+// TRIBUTARIOS
+// ═══════════════════════════════════════════════════════
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function setTribTab(tab,btn){
+  currentTribTab=tab;
+  document.querySelectorAll('#p-tributarios .filter-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTributarios();
+}
+
+function renderTributarios(){
+  const empresaId=parseInt(document.getElementById('f-trib-empresa')?.value)||null;
+  const empresas=empresaId?DB.empresas.filter(e=>e.id===empresaId):DB.empresas.filter(e=>e.status==='activo');
+  const c=document.getElementById('trib-content');
+
+  if(currentTribTab==='iva'){
+    const ivaData=DB.iva;
+    const mesActual='Abril';
+    let html=`<div class="g2 mb"><div class="card"><div class="card-header"><span class="card-title">Resumen anual por mes</span></div><div class="month-grid">`;
+    MESES.slice(0,6).forEach(m=>{
+      const total=empresas.length;
+      const done=empresas.filter(e=>ivaData[e.id]?.[m]?.f29).length;
+      const pct=total?Math.round(done/total*100):0;
+      const cls=pct===100?'done':pct>0?'partial':'pend';
+      html+=`<div class="mcell ${cls}"><div class="mcell-name">${m.slice(0,3)}</div><div class="mcell-pct">${pct}%</div></div>`;
+    });
+    html+=`</div></div>`;
+    html+=`<div class="card"><div class="card-header"><span class="card-title">Estado ${mesActual} 2026</span></div>`;
+    const done=empresas.filter(e=>ivaData[e.id]?.[mesActual]?.f29).length;
+    html+=`<div class="prog-row"><div class="prog-info"><div class="prog-name">F29 procesado</div><div class="prog-track"><div class="prog-fill" style="width:${Math.round(done/empresas.length*100)}%;background:var(--green)"></div></div></div><div class="prog-pct" style="color:var(--green)">${Math.round(done/empresas.length*100)}%</div></div>`;
+    html+=`</div></div>`;
+    html+=`<div class="card"><div class="card-header"><span class="card-title">Detalle IVA por empresa — ${mesActual} 2026</span></div><div class="tbl-wrap"><table><thead><tr><th>Empresa</th><th>F29 procesado</th><th>Aviso cliente</th><th>Monto</th></tr></thead><tbody>`;
+    empresas.forEach(e=>{
+      const d=(ivaData[e.id]||{})[mesActual]||{};
+      html+=`<tr><td class="td-primary">${e.name}</td>
+        <td><div class="check-box ${d.f29?'on':''}" onclick="toggleIVA(${e.id},'${mesActual}','f29',this)">${d.f29?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':''}</div></td>
+        <td><div class="check-box ${d.aviso?'on':''}" onclick="toggleIVA(${e.id},'${mesActual}','aviso',this)">${d.aviso?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':''}</div></td>
+        <td>${fmt(d.monto)}</td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+    c.innerHTML=html;
+  } else if(currentTribTab==='renta'){
+    let html=`<div class="card"><div class="card-header"><span class="card-title">Declaración de renta 2026</span></div><div class="tbl-wrap"><table><thead><tr><th>Empresa</th><th>Estado declaración</th><th>Monto</th><th>Aviso cliente</th></tr></thead><tbody>`;
+    empresas.forEach(e=>{
+      const r=DB.renta[e.id]||{estado:'pendiente',monto:null,aviso:false};
+      html+=`<tr><td class="td-primary">${e.name}</td><td>${rentaBadge(r.estado)}</td><td>${fmt(r.monto)}</td><td>${r.aviso?badge('Enviado','green'):badge('Pendiente','amber')}</td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+    c.innerHTML=html;
+  } else {
+    const tipos=['DJ 1879','DJ 1887','DJ 1811'];
+    let html=`<div class="card"><div class="card-header"><span class="card-title">Declaraciones Juradas 2026</span></div><div class="tbl-wrap"><table><thead><tr><th>Empresa</th>${tipos.map(t=>`<th>${t}</th>`).join('')}</tr></thead><tbody>`;
+    empresas.forEach(e=>{
+      const estados=['aceptada','presentada','pendiente','no_declara'];
+      html+=`<tr><td class="td-primary">${e.name}</td>`;
+      tipos.forEach(()=>{
+        const est=estados[Math.floor(Math.random()*estados.length)];
+        html+=`<td>${rentaBadge(est)}</td>`;
+      });
+      html+=`</tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+    c.innerHTML=html;
+  }
+}
+
+function toggleIVA(empId,mes,field,el){
+  if(!DB.iva[empId])DB.iva[empId]={};
+  if(!DB.iva[empId][mes])DB.iva[empId][mes]={f29:false,aviso:false,monto:null};
+  DB.iva[empId][mes][field]=!DB.iva[empId][mes][field];
+  const v=DB.iva[empId][mes][field];
+  el.classList.toggle('on',v);
+  el.innerHTML=v?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':'';
+  addAudit('IVA','actualizar',`${field==='f29'?'F29':'Aviso'} ${mes} — ${empName(empId)} ${v?'marcado':'desmarcado'}`);
+  toast('Guardado');
+}
+
+// ═══════════════════════════════════════════════════════
+// BALANCE
+// ═══════════════════════════════════════════════════════
+const BAL_FIELDS=[{k:'compra',l:'Compras'},{k:'venta',l:'Ventas'},{k:'honorarios',l:'Honorarios'},{k:'rrhh',l:'RRHH'},{k:'otros',l:'Otros'},{k:'mes_procesado',l:'Mes procesado'},{k:'mes_cerrado',l:'Mes cerrado'},{k:'vb',l:'VB Supervisor'}];
+
+function renderBalance(){
+  const mes=document.getElementById('f-bal-mes')?.value||'Abril';
+  const empresas=DB.empresas.filter(e=>e.status==='activo');
+  let html=empresas.map(e=>{
+    const b=DB.balance[e.id]||{};
+    const tds=BAL_FIELDS.slice(0,5).map(f=>`<td><div class="check-box ${b[f.k]?'on':''}" onclick="toggleBalance(${e.id},'${f.k}',this)">${b[f.k]?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':''}</div></td>`).join('');
+    const tds2=BAL_FIELDS.slice(5).map(f=>`<td><div class="check-box ${b[f.k]?'on':''}" onclick="toggleBalance(${e.id},'${f.k}',this)">${b[f.k]?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':''}</div></td>`).join('');
+    return `<tr><td class="td-primary">${e.name}</td>${tds}${tds2}</tr>`;
+  }).join('');
+  document.getElementById('tbl-balance').innerHTML=html;
+}
+
+function toggleBalance(empId,field,el){
+  if(!DB.balance[empId])DB.balance[empId]={};
+  DB.balance[empId][field]=!DB.balance[empId][field];
+  const v=DB.balance[empId][field];
+  el.classList.toggle('on',v);
+  el.innerHTML=v?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':'';
+  addAudit('Balance','actualizar',`${field} — ${empName(empId)} ${v?'marcado':'desmarcado'}`);
+  toast('Guardado');
+}
+
+// ═══════════════════════════════════════════════════════
+// TRABAJADORES
+// ═══════════════════════════════════════════════════════
+function renderTrabajadores(){
+  const q=(document.getElementById('f-trab')?.value||'').toLowerCase();
+  const eid=parseInt(document.getElementById('f-trab-empresa')?.value)||null;
+  const st=document.getElementById('f-trab-status')?.value||'';
+  const rows=DB.trabajadores.filter(t=>{
+    if(eid&&t.empresa_id!==eid)return false;
+    if(st&&t.status!==st)return false;
+    if(q&&!t.name.toLowerCase().includes(q)&&!t.rut.includes(q))return false;
+    return true;
+  });
+  document.getElementById('tbl-trabajadores').innerHTML=rows.length?rows.map(t=>`
+    <tr><td><div class="td-primary">${t.name}</div></td><td>${t.rut}</td>
+    <td>${empName(t.empresa_id)}</td><td>${t.cargo||'—'}</td>
+    <td>${badge(t.contrato.replace('_',' '),'blue')}</td>
+    <td>${t.afp||'—'}</td><td>${fmt(t.sueldo)}</td>
+    <td>${statusBadge(t.status)}</td>
+    <td><button class="btn" style="padding:4px 8px;font-size:11px;color:var(--red)" onclick="deleteTrab(${t.id})">✕</button></td></tr>`).join('')
+    :`<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">No hay trabajadores con estos filtros</td></tr>`;
+}
+
+function saveTrabajador(){
+  const name=document.getElementById('w-name').value.trim();
+  const rut=document.getElementById('w-rut').value.trim();
+  if(!name||!rut){toast('Nombre y RUT son requeridos');return;}
+  const t={id:nextId++,name,rut,empresa_id:parseInt(document.getElementById('w-empresa').value)||null,cargo:document.getElementById('w-cargo').value,contrato:document.getElementById('w-contrato').value,afp:document.getElementById('w-afp').value,isapre:document.getElementById('w-isapre').value,sueldo:parseInt(document.getElementById('w-sueldo').value)||null,ingreso:document.getElementById('w-ingreso').value,status:'activo'};
+  DB.trabajadores.push(t);
+  addAudit('Trabajador','crear',`Nuevo trabajador: "${name}"`);
+  closeModal('modal-trabajador');
+  ['w-name','w-rut','w-cargo','w-isapre','w-sueldo','w-ingreso'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  toast(`Trabajador "${name}" agregado`);
+  renderTrabajadores();
+}
+
+function deleteTrab(id){
+  const t=DB.trabajadores.find(x=>x.id===id);
+  DB.trabajadores=DB.trabajadores.filter(x=>x.id!==id);
+  addAudit('Trabajador','eliminar',`Trabajador "${t?.name}" eliminado`);
+  toast('Trabajador eliminado');
+  renderTrabajadores();
+}
+
+// ═══════════════════════════════════════════════════════
+// RRHH
+// ═══════════════════════════════════════════════════════
+function renderRRHH(){
+  const eid=parseInt(document.getElementById('f-rrhh-empresa')?.value)||null;
+  const mes=document.getElementById('f-rrhh-mes')?.value||'Abril';
+  const c=document.getElementById('rrhh-content');
+  if(!eid){c.innerHTML=`<div class="card"><div style="text-align:center;padding:32px;color:var(--muted)">Selecciona una empresa para ver su estado RRHH</div></div>`;return;}
+  const empresa=emp(eid);
+  const d=DB.cumplimientoRRHH[eid]||(DB.cumplimientoRRHH[eid]={liquidacion:{solicitud:false,procesada:false,vb:false,enviada:false},imposiciones:{previred:false,aviso:false,monto:null},libro:{subido:false}});
+
+  const liq=d.liquidacion;const imp=d.imposiciones;const lib=d.libro;
+  const totalChecks=6;const doneChecks=[liq.solicitud,liq.procesada,liq.vb,liq.enviada,imp.previred,imp.aviso,lib.subido].filter(Boolean).length;
+  const pct=Math.round(doneChecks/7*100);
+
+  c.innerHTML=`
+  <div class="card mb">
+    <div class="card-header"><span class="card-title">${empresa.name} — ${mes} 2026</span><div style="display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:var(--muted)">Progreso global</span><div style="width:120px;height:7px;background:#f1f5f9;border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--brand);border-radius:4px"></div></div><span style="font-size:13px;font-weight:700;color:var(--text)">${pct}%</span></div></div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Liquidación de sueldos</span></div>
+      <div class="check-list">
+        ${rrhhCheck(eid,'liquidacion','solicitud','Solicitud de info',liq.solicitud)}
+        ${rrhhCheck(eid,'liquidacion','procesada','Liquidación procesada',liq.procesada)}
+        ${rrhhCheck(eid,'liquidacion','vb','VB Supervisor',liq.vb)}
+        ${rrhhCheck(eid,'liquidacion','enviada','Enviada al cliente',liq.enviada)}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Imposiciones</span></div>
+      <div class="check-list">
+        ${rrhhCheck(eid,'imposiciones','previred','Previred procesado',imp.previred)}
+        ${rrhhCheck(eid,'imposiciones','aviso','Aviso al cliente',imp.aviso)}
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px">MONTO IMPOSICIONES</div>
+        <input class="form-input" type="number" id="monto-imp-${eid}" placeholder="0" value="${imp.monto||''}" oninput="saveMontoImp(${eid},this.value)" style="font-size:14px;font-weight:600">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">Libro remuneraciones</span></div>
+      <div class="check-list">
+        ${rrhhCheck(eid,'libro','subido','Subido a DT',lib.subido)}
+      </div>
+      <div style="margin-top:14px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Trabajadores activos en esta empresa</div>
+        ${DB.trabajadores.filter(t=>t.empresa_id===eid&&t.status==='activo').map(t=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><span>${t.name}</span><span style="color:var(--muted)">${fmt(t.sueldo)}</span></div>`).join('')||'<div style="color:var(--muted);font-size:12px">Sin trabajadores activos</div>'}
+      </div>
+    </div>
+  </div>`;
+}
+
+function rrhhCheck(eid,cat,field,label,val){
+  return `<div class="check-row"><span class="check-label">${label}</span><div class="check-box ${val?'on':''}" onclick="toggleRRHH(${eid},'${cat}','${field}',this)">${val?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':''}</div></div>`;
+}
+
+function toggleRRHH(eid,cat,field,el){
+  if(!DB.cumplimientoRRHH[eid])DB.cumplimientoRRHH[eid]={liquidacion:{solicitud:false,procesada:false,vb:false,enviada:false},imposiciones:{previred:false,aviso:false,monto:null},libro:{subido:false}};
+  DB.cumplimientoRRHH[eid][cat][field]=!DB.cumplimientoRRHH[eid][cat][field];
+  const v=DB.cumplimientoRRHH[eid][cat][field];
+  el.classList.toggle('on',v);
+  el.innerHTML=v?'<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>':'';
+  addAudit('CumplimientoRRHH','actualizar',`${field} — ${empName(eid)} ${v?'completado':'desmarcado'}`);
+}
+
+function saveMontoImp(eid,val){
+  if(!DB.cumplimientoRRHH[eid])return;
+  DB.cumplimientoRRHH[eid].imposiciones.monto=parseInt(val)||null;
+}
+
+function saveRRHH(){
+  addAudit('CumplimientoRRHH','actualizar','Cambios RRHH guardados');
+  toast('RRHH guardado correctamente');
+}
+
+// ═══════════════════════════════════════════════════════
+// REPORTES
+// ═══════════════════════════════════════════════════════
+function renderReportes(){
+  const ingresos=[{m:'Enero',v:3100000},{m:'Febrero',v:3300000},{m:'Marzo',v:3520000},{m:'Abril',v:3740000}];
+  const max=Math.max(...ingresos.map(i=>i.v));
+  document.getElementById('rep-ingresos').innerHTML=ingresos.map(i=>`
+    <div class="bar-row"><div class="bar-label">${i.m}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(i.v/max*100)}%"></div></div><div class="bar-value" style="width:55px">$${(i.v/1000000).toFixed(1)}M</div></div>`).join('');
+
+  const nuevas=[{m:'Enero',v:2},{m:'Febrero',v:3},{m:'Marzo',v:4},{m:'Abril',v:3}];
+  document.getElementById('rep-nuevas').innerHTML=nuevas.map(n=>`
+    <div class="bar-row"><div class="bar-label">${n.m}</div><div class="bar-track"><div class="bar-fill green" style="width:${n.v*20}%"></div></div><div class="bar-value">${n.v}</div></div>`).join('');
+
+  const cumplimientos=[
+    {name:'Transportes Larrondo',iva:'ok',renta:'en proceso',dj:'aceptada',pct:82},
+    {name:'Comercial Martínez',iva:'ok',renta:'aceptada',dj:'presentada',pct:100},
+    {name:'Agrícola Becerra',iva:'atrasado',renta:'pendiente',dj:'pendiente',pct:41},
+    {name:'Servicios Ramos',iva:'ok',renta:'aceptada',dj:'presentada',pct:100},
+    {name:'Constructora Vega',iva:'ok',renta:'presentada',dj:'aceptada',pct:95},
+  ];
+  document.getElementById('tbl-cumplimiento').innerHTML=cumplimientos.map(r=>`
+    <tr><td class="td-primary">${r.name}</td>
+    <td>${r.iva==='ok'?badge('ok','green'):r.iva==='atrasado'?badge('atrasado','red'):badge(r.iva,'amber')}</td>
+    <td>${rentaBadge(r.renta.replace(' ','_'))}</td>
+    <td>${rentaBadge(r.dj)}</td>
+    <td>${badge(r.pct+'%',r.pct>=90?'green':r.pct>=60?'amber':'red')}</td></tr>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// AUDITORÍA
+// ═══════════════════════════════════════════════════════
+function renderAuditoria(){
+  const accion=document.getElementById('f-audit-accion')?.value||'';
+  const entidad=document.getElementById('f-audit-entidad')?.value||'';
+  const rows=DB.auditoria.filter(a=>{
+    if(accion&&a.accion!==accion)return false;
+    if(entidad&&a.entidad!==entidad)return false;
+    return true;
+  });
+  document.getElementById('tbl-auditoria').innerHTML=rows.map(a=>`
+    <tr><td style="color:var(--muted);white-space:nowrap">${a.fecha}</td>
+    <td>${a.user}</td><td>${badge(a.entidad,'gray')}</td>
+    <td>${badge(a.accion,a.accion==='crear'?'green':a.accion==='eliminar'?'red':'blue')}</td>
+    <td>${a.detalle}</td></tr>`).join('');
+}
+
+
+// ═══════════════════════════════════════════════════════
+// COMUNAS POR REGIÓN
+// ═══════════════════════════════════════════════════════
+const COMUNAS = {
+  'Arica y Parinacota': ['Arica','Camarones','Putre','General Lagos'],
+  'Tarapacá': ['Iquique','Alto Hospicio','Pozo Almonte','Camiña','Colchane','Huara','Pica'],
+  'Antofagasta': ['Antofagasta','Mejillones','Sierra Gorda','Taltal','Calama','Ollagüe','San Pedro de Atacama','Tocopilla','María Elena'],
+  'Atacama': ['Copiapó','Caldera','Tierra Amarilla','Chañaral','Diego de Almagro','Vallenar','Alto del Carmen','Freirina','Huasco'],
+  'Coquimbo': ['La Serena','Coquimbo','Andacollo','La Higuera','Paiguano','Vicuña','Illapel','Canela','Los Vilos','Salamanca','Ovalle','Combarbalá','Monte Patria','Punitaqui','Río Hurtado'],
+  'Valparaíso': ['Valparaíso','Casablanca','Concón','Juan Fernández','Puchuncaví','Quintero','Viña del Mar','Isla de Pascua','Los Andes','Calle Larga','Rinconada','San Esteban','La Ligua','Cabildo','Papudo','Petorca','Zapallar','Quillota','Calera','Hijuelas','La Cruz','Limache','Nogales','Olmué','San Antonio','Algarrobo','Cartagena','El Quisco','El Tabo','Santo Domingo','San Felipe','Catemu','Llaillay','Panquehue','Putaendo','Santa María','Quilpué','Villa Alemana'],
+  'Metropolitana': ['Santiago','Cerrillos','Cerro Navia','Conchalí','El Bosque','Estación Central','Huechuraba','Independencia','La Cisterna','La Florida','La Granja','La Pintana','La Reina','Las Condes','Lo Barnechea','Lo Espejo','Lo Prado','Macul','Maipú','Ñuñoa','Pedro Aguirre Cerda','Peñalolén','Providencia','Pudahuel','Quilicura','Quinta Normal','Recoleta','Renca','San Joaquín','San Miguel','San Ramón','Vitacura','Puente Alto','Pirque','San José de Maipo','Colina','Lampa','Tiltil','San Bernardo','Buin','Calera de Tango','Paine','Melipilla','Alhué','Curacaví','María Pinto','San Pedro','Talagante','El Monte','Isla de Maipo','Padre Hurtado','Peñaflor'],
+  "O'Higgins": ['Rancagua','Codegua','Coinco','Coltauco','Doñihue','Graneros','Las Cabras','Machalí','Malloa','Mostazal','Olivar','Peumo','Pichidegua','Quinta de Tilcoco','Rengo','Requínoa','San Vicente','Pichilemu','La Estrella','Litueche','Marchihue','Navidad','Paredones','San Fernando','Chépica','Chimbarongo','Lolol','Nancagua','Palmilla','Peralillo','Placilla','Pumanque','Santa Cruz'],
+  'Maule': ['Talca','Constitución','Curepto','Empedrado','Maule','Pelarco','Pencahue','Río Claro','San Clemente','San Rafael','Cauquenes','Chanco','Pelluhue','Curicó','Hualañé','Licantén','Molina','Rauco','Romeral','Sagrada Familia','Teno','Vichuquén','Linares','Colbún','Longaví','Parral','Retiro','San Javier','Villa Alegre','Yerbas Buenas'],
+  'Ñuble': ['Chillán','Bulnes','Cobquecura','Coelemu','Coihueco','Chillán Viejo','El Carmen','Ninhue','Ñiquén','Pemuco','Pinto','Portezuelo','Quillón','Quirihue','Ránquil','San Carlos','San Fabián','San Ignacio','San Nicolás','Treguaco','Yungay'],
+  'Biobío': ['Concepción','Coronel','Chiguayante','Florida','Hualqui','Lota','Penco','San Pedro de la Paz','Santa Juana','Talcahuano','Tomé','Hualpén','Lebu','Arauco','Cañete','Contulmo','Curanilahue','Los Álamos','Tirúa','Los Ángeles','Antuco','Cabrero','Laja','Mulchén','Nacimiento','Negrete','Quilaco','Quilleco','San Rosendo','Santa Bárbara','Tucapel','Yumbel','Alto Biobío'],
+  'Araucanía': ['Temuco','Carahue','Cunco','Curarrehue','Freire','Galvarino','Gorbea','Lautaro','Loncoche','Melipeuco','Nueva Imperial','Padre las Casas','Perquenco','Pitrufquén','Pucón','Saavedra','Teodoro Schmidt','Toltén','Vilcún','Villarrica','Cholchol','Angol','Collipulli','Curacautín','Ercilla','Lonquimay','Los Sauces','Lumaco','Purén','Renaico','Traiguén','Victoria'],
+  'Los Ríos': ['Valdivia','Corral','Futrono','La Unión','Lago Ranco','Lanco','Los Lagos','Máfil','Mariquina','Paillaco','Panguipulli','Río Bueno'],
+  'Los Lagos': ['Puerto Montt','Calbuco','Cochamó','Fresia','Frutillar','Los Muermos','Llanquihue','Maullín','Puerto Varas','Castro','Ancud','Chonchi','Curaco de Vélez','Dalcahue','Puqueldón','Queilén','Quellón','Quemchi','Quinchao','Osorno','Puerto Octay','Purranque','Puyehue','Río Negro','San Juan de la Costa','San Pablo','Chaitén','Futaleufú','Hualaihué','Palena'],
+  'Aysén': ['Coyhaique','Lago Verde','Aysén','Cisnes','Guaitecas','Cochrane','O'Higgins','Tortel','Chile Chico','Río Ibáñez'],
+  'Magallanes': ['Punta Arenas','Laguna Blanca','Río Verde','San Gregorio','Cabo de Hornos','Antártica','Porvenir','Primavera','Timaukel','Natales','Torres del Paine']
+};
+
+let comunaDropdownVisible = false;
+
+function onRegionChange() {
+  const region = document.getElementById('e-region').value;
+  const searchInput = document.getElementById('e-comuna-search');
+  const hidden = document.getElementById('e-comuna');
+  const dropdown = document.getElementById('e-comuna-dropdown');
+
+  hidden.value = '';
+  searchInput.value = '';
+  dropdown.innerHTML = '';
+  dropdown.style.display = 'none';
+
+  if (region && COMUNAS[region]) {
+    searchInput.disabled = false;
+    searchInput.style.background = '';
+    searchInput.style.color = '';
+    searchInput.style.cursor = '';
+    searchInput.placeholder = 'Escribe para buscar...';
+    searchInput.focus();
+  } else {
+    searchInput.disabled = true;
+    searchInput.style.background = 'var(--bg)';
+    searchInput.style.color = 'var(--muted)';
+    searchInput.style.cursor = 'not-allowed';
+    searchInput.placeholder = 'Selecciona una región primero';
+  }
+}
+
+function filterComunas() {
+  const region = document.getElementById('e-region').value;
+  const q = document.getElementById('e-comuna-search').value.toLowerCase().trim();
+  const dropdown = document.getElementById('e-comuna-dropdown');
+
+  if (!region || !COMUNAS[region]) { dropdown.style.display = 'none'; return; }
+
+  const all = COMUNAS[region];
+  const filtered = q ? all.filter(c => c.toLowerCase().includes(q)) : all;
+
+  if (!filtered.length) {
+    dropdown.innerHTML = '<div style="padding:10px 12px;color:var(--muted);font-size:12px">Sin resultados</div>';
+    dropdown.style.display = 'block';
+    return;
+  }
+
+  dropdown.innerHTML = filtered.map(c => {
+    const hi = q ? c.replace(new RegExp(`(${q})`, 'gi'), '<strong>$1</strong>') : c;
+    return `<div class="comuna-opt" onmousedown="selectComuna('${c}')" style="padding:8px 12px;cursor:pointer;font-size:13px;color:var(--text)">${hi}</div>`;
+  }).join('');
+  dropdown.style.display = 'block';
+}
+
+function showComunaDropdown() {
+  const region = document.getElementById('e-region').value;
+  if (!region || !COMUNAS[region]) return;
+  filterComunas();
+}
+
+function hideComunaDropdown() {
+  // Small delay so mousedown on option fires first
+  setTimeout(() => {
+    document.getElementById('e-comuna-dropdown').style.display = 'none';
+  }, 150);
+}
+
+function selectComuna(comuna) {
+  document.getElementById('e-comuna-search').value = comuna;
+  document.getElementById('e-comuna').value = comuna;
+  document.getElementById('e-comuna-dropdown').style.display = 'none';
+}
+
+// Hover effect for options
+document.addEventListener('mouseover', e => {
+  if (e.target.classList.contains('comuna-opt')) {
+    e.target.style.background = 'var(--brand-l)';
+    e.target.style.color = 'var(--brand)';
+  }
+});
+document.addEventListener('mouseout', e => {
+  if (e.target.classList.contains('comuna-opt')) {
+    e.target.style.background = '';
+    e.target.style.color = 'var(--text)';
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+populateEmpresaSelects();
+renderDashboard();
+</script>
+</body>
+</html>
